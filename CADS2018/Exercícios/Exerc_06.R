@@ -61,4 +61,37 @@ bancadas_coligacoes_governismo <- bancadas %>%
 # tem a maior proporção total de assentos.
 
 bancadas2 <- bancadas_coligacoes_governismo %>%
-  unite(P_P,president,partypresid,,sep=" - ",remove=F)
+  unite(pres_ppres, #nome da coluna criada
+        president,partypresid, #colunas que estou unindo
+        sep=" - ",
+        remove=F)
+
+governismo_coligacao <- bancadas2 %>%
+  mutate(prop=size/sum(size)) %>%
+  group_by(president,partypresid) %>%
+  summarise(prop_total=sum(prop,na.rm = T),
+            apoio = mean(governismo,na.rm=T) )
+    
+governismo_coligacao2 <- bancadas2 %>%
+  group_by(president,partypresid) %>%
+  summarise(size_total=sum(size,na.rm = T),
+            apoio = governismo*size/sum(size,na.rm=T)) %>%
+  mutate(prop=prop.table(size_total)) 
+
+
+# Create a data.frame with dirty names
+test_df <- as.data.frame(matrix(ncol = 6))
+names(test_df) <- c("firstName", "ábc@!*", "% successful (2009)",
+                    "REPEAT VALUE", "REPEAT VALUE", "")
+
+test_df %>%
+  clean_names()
+
+mtcars %>%
+  tabyl(gear, cyl) %>%
+  adorn_totals("col") %>%
+  adorn_percentages("row") %>%
+  adorn_pct_formatting(digits = 2) %>%
+  adorn_ns() %>%
+  adorn_title()
+

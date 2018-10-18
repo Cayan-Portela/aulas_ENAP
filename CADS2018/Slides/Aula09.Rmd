@@ -1,0 +1,131 @@
+---
+title: "Apresentação e Publicação"
+author: "Frederico Bertholini"
+subtitle: Aula 09
+output:
+  ioslides_presentation: 
+    widescreen: yes
+  beamer_presentation: default
+---
+
+
+```{r,eval=T,include=F}
+
+lista.de.pacotes = c("tidyverse","lubridate","janitor","readxl","stringr","repmis","survey","srvyr") # escreva a lista de pacotes
+novos.pacotes <- lista.de.pacotes[!(lista.de.pacotes %in%
+                                      installed.packages()[,"Package"])]
+if(length(novos.pacotes) > 0) {install.packages(novos.pacotes)}
+lapply(lista.de.pacotes, require, character.only=T)
+rm(lista.de.pacotes,novos.pacotes)
+gc()
+
+knitr::opts_knit$set(root.dir = "/Volumes/Macintosh HD/OneDrive/ENAP/aulas_ENAP")
+
+
+```
+
+
+## Preparação para a aula
+
+- Baixe os dados da pasta exercícios (ou faça pull do seu GitHub)
+
+- Configure o GitHub na sua máquina 
+
+ -- Versionamento -> <https://www.curso-r.com/blog/2017-07-17-rstudio-e-github/>
+
+ -- Instruções adicionais de instalação <http://r-bio.github.io/git-installation/>
+
+- Rode todos os pacotes (usando o macetinho) --> pode baixar o script do exercício 6, que já tem tudo. 
+
+- Repositório no GitHub <https://github.com/fredbsr/aulas_ENAP/tree/master/CADS2018>
+
+
+
+## Exercício
+
+- Carregue os dados de exemplo do pacote survey `data(api)`, use o data.frame `apisrs` 
+
+- Crie o objeto tbl_svy `amostra_expandida` expandindo a amostra aleatória simples usando apenas a variável (coluna) "pw", contendo o peso amostral. Dica: execute `as_survey(weight=pw)`. 
+
+- Usando a variável `stype` crie uma nova variável indicando se a escola é de nível fundamental (categorias **E** e **M** de `stype`)  ou de nível médio (categoria *H* de `stype`). Dica: use `mutate`e `case_when`.
+
+- Faça um gráfico de barras comparando a variação média das notas de 1999 (`api99`) e 2000 (`api00`) por nível e utilize as estimativas intervalares. Dica: olhe o código da aula 07, utilize `geom_errorbar` para a estimativa intervalar.
+
+
+## Resolução
+```{r,eval=F}
+data(api)
+
+amostra_expandida <- apisrs %>% 
+  as_survey(weight = pw) %>%
+  mutate(nivel=case_when(
+    stype=="E"~"Fundamental",
+    stype=="M"~"Fundamental",
+    stype=="H"~"Médio"
+  ))
+
+```
+
+
+##
+
+```{r,eval=F}
+
+out <- amostra_expandida %>%
+  group_by(nivel) %>%
+  summarise(api_diff = survey_mean(api00 - api99, vartype = "ci"))
+
+```
+
+
+## 
+
+```{r,eval=F}
+
+out %>% 
+  ggplot(aes(x = nivel, y = api_diff, fill = nivel,color=nivel,
+                       ymax = api_diff_upp, ymin = api_diff_low)) +
+  geom_bar(stat = "identity",alpha=0.6) +
+  geom_errorbar(width = 0,size=3) 
+
+```
+
+
+
+# ioslides no Rmarkdown
+
+## Trabalhando com slides no RMarkdown
+
+- Manual <https://rmarkdown.rstudio.com/lesson-11.html>
+
+- Galeria <https://rmarkdown.rstudio.com/gallery.html>
+
+File ==> New file ==> R Markdonw ==> Presentation
+
+- HTML (ioslides)
+
+## Trabalhando no .rmd
+
+- Opções e detalhes do ioslides <https://rmarkdown.rstudio.com/ioslides_presentation_format#overview>
+
+- Mais referências <https://bookdown.org/yihui/rmarkdown/ioslides-presentation.html>
+
+- Montando o arquivo `ìndex.rmd`
+
+
+## gh-pages
+
+- novo "branch"
+
+- nome `gh-pages`
+
+- arquivo `ìndex.html` precisa estar na raiz
+
+- a cada alteração de `ìndex.rmd` e `ìndex.html`, merge de master para gh-pages OU SIMPLESMENTE apague o branch e recrie o gh-pages
+
+- Suestão: só crie o branch gh-pages quando concluir seu trabalho e fizer o  
+
+- Seu site estará no endereço ==> nome_de_usuario.github.io/nome_do_repositorio/
+
+- ATENÇÃO: não esqueça da barra final no endereço
+

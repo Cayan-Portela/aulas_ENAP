@@ -16,12 +16,31 @@ decisoes <- read_rds("~/git/aulas_ENAP/CADS2018/Exercícios/dados/decisoes.rds/d
 # Qual quantidade mensal de decisões por juiz?
 
 juiz_mes <- decisoes %>% 
-  mutate(mes = month(dmy(data_decisao))) %>%
+  mutate(data_decisao_corrigida=dmy(data_decisao),
+         mes = month(data_decisao_corrigida)) %>%
   filter(!is.na(mes)) %>%
   group_by(juiz,mes) %>%
-  summarise(n=n()) %>%
-  spread(mes,n,fill = 0)
+  summarise(numero_de_processos=n()) %>%
+  spread(mes,numero_de_processos,fill = 0)
 
+
+# Separate
+assuntos <- decisoes %>% 
+  select(n_processo, classe_assunto) %>% 
+  separate(classe_assunto, 
+           c('classe', 'assunto'), 
+           sep = ' / ', 
+           extra = 'merge', 
+           fill = 'right') %>% 
+  count(assunto, sort = TRUE)
+
+# Processos partes
+processos <- read_rds("~/git/aulas_ENAP/CADS2018/Exercícios/dados/decisoes.rds/processos_nested.rds")
+
+# DEsaninhando
+d_partes <- processos %>% 
+  select(n_processo, partes) %>% 
+  unnest(partes)
 
 # Crie um objeto contendo informações sobre os tamanhos das bancadas dos ----
 # partidos (arquivo `bancadas.rds`), suas respectivas coligações 
